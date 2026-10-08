@@ -1,76 +1,60 @@
 import { Link } from "react-router-dom";
-import Card from "react-bootstrap/Card";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../consts-data";
 
 const FoodCard = ({ element, usersList }) => {
-  const [loggedIn, setLoggedIn] = useState(false);
-  useEffect(() => {
-    setLoggedIn(localStorage.getItem("token") ? true : false);
-    axios.defaults.headers.common["Authorization"] = localStorage.getItem(
-      "token"
-    )
-      ? `Bearer ${localStorage.getItem("token")}`
-      : "";
-  }, []);
-
-  const [isFoodInListAlready, setIsFoodInListAlready] = useState(false);
+  const loggedIn = Boolean(localStorage.getItem("token"));
+  const [isInList, setIsInList] = useState(false);
 
   useEffect(() => {
-    setIsFoodInListAlready(usersList.find((food) => food._id === element._id));
+    setIsInList(usersList.some((food) => food._id === element._id));
   }, [usersList, element]);
 
   const addToMyList = async () => {
-    if (isFoodInListAlready) {
-      return;
-    }
+    if (isInList) return;
     try {
-      const res = await axios.post(`${API_URL}/my-list/${element._id}`);
-      setIsFoodInListAlready(true);
-    } catch (err) {}
+      await axios.post(`${API_URL}/my-list/${element._id}`);
+      setIsInList(true);
+    } catch (err) {
+      console.log(err);
+    }
   };
-  return (
-    <>
-      <Card className="main-card" style={{ width: "30rem" }}>
-        {/* {confirmMessage && <h4 className="success">{confirmMessage}</h4>} */}
 
-        <div>
-          <li>
-            <Link to={`/foods/${element._id}`}>
-              <Card.Img variant="top" src={element.foodUrl} alt="food image" />
-            </Link>
-          </li>
-          <Card.Body>
-            <div className="card-header">
-              <li>
-                <Card.Title>{element.name}</Card.Title>
-              </li>
-            </div>
-            <div className="origin-card">
-              <li className="flag-card">
-                <Card.Img src={element.flagUrl} alt="flags" />
-              </li>
-              <li>
-                <Card.Text>{element.origin} </Card.Text>
-              </li>
-            </div>
-            {loggedIn && (
-              <button className="list-btn" onClick={addToMyList}>
-                <img
-                  className="list-icon"
-                  src={
-                    isFoodInListAlready
-                      ? "https://res.cloudinary.com/de9zdtobn/image/upload/v1679742442/icons8-done-64_mq0ybn.png"
-                      : "https://res.cloudinary.com/de9zdtobn/image/upload/v1679488194/icons8-add-to-list-64_kuuyn6.png"
-                  }
-                />
-              </button>
-            )}
-          </Card.Body>
-        </div>
-      </Card>
-    </>
+  return (
+    <li className="food-tile">
+      <Link to={`/foods/${element._id}`} className="food-tile-media">
+        <img src={element.foodUrl} alt={element.name} loading="lazy" />
+      </Link>
+      {loggedIn && (
+        <button
+          type="button"
+          className={`list-btn${isInList ? " is-added" : ""}`}
+          onClick={addToMyList}
+          aria-label={isInList ? "In your list" : `Add ${element.name} to your list`}
+          title={isInList ? "In your list" : "Add to my list"}
+        >
+          {isInList ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          )}
+        </button>
+      )}
+      <div className="food-tile-body">
+        <h3>
+          <Link to={`/foods/${element._id}`}>{element.name}</Link>
+        </h3>
+        <p className="origin">
+          {element.flagUrl && <img src={element.flagUrl} alt="" />}
+          <span>{element.origin}</span>
+        </p>
+      </div>
+    </li>
   );
 };
 

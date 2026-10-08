@@ -1,68 +1,66 @@
 import { Link } from "react-router-dom";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import useAuth from "../hooks/useAuth";
+import { BrandMark } from "./NavBar";
 
 const Footer = () => {
-  const navigationLinks = [
-    { title: "Home", slug: "/" },
-    { title: "Explore", slug: "/explore" },
-  ];
-
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setLoggedIn(localStorage.getItem("token") ? true : false);
-    axios.defaults.headers.common["Authorization"] = localStorage.getItem(
-      "token"
-    )
-      ? `Bearer ${localStorage.getItem("token")}`
-      : "";
-    // console.log("Location updated!");
-    // console.log({ location });
-    // console.log({ navigate });
-  }, [location]);
-
-  const onLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  const { loggedIn, logout } = useAuth();
 
   return (
-    <footer>
-      {
-        <ul className="primary-nav">
-          {navigationLinks.map((link, idx) => (
-            <li className="footer-bar" key={idx}>
-              <Link to={link.slug}>{link.title}</Link>
-            </li>
-          ))}
-        </ul>
-      }
-      <ul className="secondary-nav">
-        {loggedIn ? (
-          <>
+    <footer className="site-footer">
+      <div className="footer-inner">
+        <div className="footer-about">
+          <Link to="/" className="brand">
+            <BrandMark />
+            <span>Foods Paradise</span>
+          </Link>
+          <p>
+            Discover the top 10 foods in the world, review your favourites and
+            build a list of your own.
+          </p>
+        </div>
+
+        <nav aria-label="Explore" className="footer-col">
+          <h2>Explore</h2>
+          <ul>
             <li>
-              <Link to="/my-list">My List</Link>
+              <Link to="/">Home</Link>
             </li>
-            <li className="footer-item" onClick={onLogout}>
-              <Link to="/logout">Logout</Link>
+            <li>
+              <Link to="/explore">All foods</Link>
             </li>
-          </>
-        ) : (
-          <>
-            <li className="footer-item">
-              <Link to="/register">Register</Link>
-            </li>
-            <li className="footer-item">
-              <Link to="/login">Login</Link>
-            </li>
-          </>
-        )}
-      </ul>
+          </ul>
+        </nav>
+
+        <nav aria-label="Account" className="footer-col">
+          <h2>Account</h2>
+          <ul>
+            {loggedIn ? (
+              <>
+                <li>
+                  <Link to="/my-list">My List</Link>
+                </li>
+                <li>
+                  <button type="button" className="link-btn" onClick={logout}>
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link to="/login">Login</Link>
+                </li>
+                <li>
+                  <Link to="/register">Register</Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </nav>
+      </div>
+      <p className="footer-legal">
+        © {new Date().getFullYear()} Foods Paradise. Made with appetite.
+      </p>
     </footer>
   );
 };

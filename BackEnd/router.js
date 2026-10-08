@@ -5,6 +5,7 @@ import { auth } from "./middleware/auth.js";
 import reviewController from "./controllers/reviewController.js";
 import { body } from "express-validator";
 import validate from "./middleware/validate.js";
+import { authLimiter } from "./middleware/rateLimit.js";
 import myListController from "./controllers/myListController.js";
 
 const router = express.Router();
@@ -23,15 +24,13 @@ router
 router
   .route("/register")
   .post(
+    authLimiter,
     body("email").isEmail(),
     body("password").isLength({ min: 7 }),
-    body("role"),
     body("userName").isLength({ min: 3 }),
     validate,
     userController.register
   );
-router;
-
 router
   .route("/my-list")
   .get(auth, myListController.grabList)
@@ -42,10 +41,25 @@ router
   .delete(auth, myListController.deleteListItem);
 // .patch(auth, myListController.updateFoodList);
 
-router.route("/login").post(userController.login);
-router.route("/users").get(userController.getAllUsers);
+router
+  .route("/login")
+  .post(
+    authLimiter,
+    body("email").isEmail(),
+    body("password").isLength({ min: 1 }),
+    validate,
+    userController.login
+  );
+router.route("/users").get(auth, userController.getAllUsers);
 router.route("/user").get(auth, userController.getCurrentUser);
-router.route("/foods/:foodId").post(auth, reviewController.createReview);
+router
+  .route("/foods/:foodId")
+  .post(
+    auth,
+    body("text").trim().isLength({ min: 1 }),
+    validate,
+    reviewController.createReview
+  );
 router
   .route("/foods/:foodId/:reviewId")
   .patch(

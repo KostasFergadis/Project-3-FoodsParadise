@@ -1,8 +1,6 @@
 import User from "../models/user.js";
 import Food from "../models/food.js";
 import mongoose from "mongoose";
-const id = new mongoose.Types.ObjectId();
-
 const addFood = async (req, res, next) => {
   const { foodId } = req.params;
   const userId = req.currentUser.id;
@@ -16,7 +14,6 @@ const addFood = async (req, res, next) => {
     }
 
     const food = await Food.findById(foodId);
-    console.log(food);
     if (!food) {
       return res
         .status(404)
@@ -24,14 +21,14 @@ const addFood = async (req, res, next) => {
     }
     if (user.list.some((foodObj) => foodObj._id.toString() === foodId)) {
       return res
-        .status(404)
+        .status(409)
         .json({ success: false, message: "Food already added" });
     }
 
     user.list.push(food);
     await user.save();
 
-    res.status(200).json({ message: "Food added to your list", data: user });
+    res.status(200).json({ message: "Food added to your list", data: food });
   } catch (err) {
     next(err);
   }
@@ -39,8 +36,8 @@ const addFood = async (req, res, next) => {
 
 const grabList = async (req, res, next) => {
   const userId = req.currentUser.id;
-  const user = await User.findById(userId);
   try {
+    const user = await User.findById(userId);
     if (!user) {
       return res
         .status(404)
@@ -81,13 +78,10 @@ const deleteListItem = async (req, res, next) => {
 };
 
 const createListFood = async (req, res, next) => {
-  const newFood = req.body;
+  const { foodUrl, flagUrl, name, origin, ingredients } = req.body;
   const userId = req.currentUser.id;
 
   try {
-    if (req.currentUser.role !== "user") {
-      return res.status(400).json({ message: "Not authenticated" });
-    }
     const user = await User.findById(userId);
     if (!user) {
       return res
@@ -95,7 +89,7 @@ const createListFood = async (req, res, next) => {
         .json({ success: false, message: "User not found" });
     }
     const id = new mongoose.Types.ObjectId();
-    const foodItem = { ...newFood, _id: id };
+    const foodItem = { foodUrl, flagUrl, name, origin, ingredients, _id: id };
     user.list.push(foodItem);
     await user.save();
     res

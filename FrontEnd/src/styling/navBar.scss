@@ -1,71 +1,190 @@
-* {
-  padding: 0;
-  margin: 0;
-}
-
-nav {
+.brand {
+  display: inline-flex;
   align-items: center;
-  display: flex;
-  justify-content: space-between;
-  margin: 1em 0em 1.5em 0em;
-  height: 8vh;
-  background-color: rgb(219, 221, 223);
-  position: relative;
-}
-li {
-  list-style: none;
-}
-ul {
-  gap: 2.5em;
-  margin-bottom: 0 !important;
-}
-
-.primary-nav {
-  display: flex;
-  justify-content: flex-start;
-  margin-left: 4em;
-}
-.secondary-nav {
-  display: flex;
-  justify-content: flex-end;
-  margin-right: 7em;
-}
-a {
-  text-decoration: none !important;
-  color: black !important;
-  cursor: pointer;
+  gap: 0.6rem;
+  font-family: var(--serif);
   font-weight: 600;
-}
-a:hover {
-  color: rgb(44, 112, 176) !important;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+  &:hover {
+    color: var(--blue);
+  }
 }
 
-//Footer
-footer {
-  height: 12vh;
-  width: 100%;
-  background-color: rgb(219, 221, 223);
-  //background-color: #266388;
-  margin: 1em 0em 0em 0em;
+.brand-mark {
+  width: 1.9rem;
+  height: 1.9rem;
+  flex-shrink: 0;
+  circle {
+    fill: var(--blue);
+  }
+  path {
+    fill: none;
+    stroke: var(--cream);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  path:first-of-type {
+    fill: var(--cream);
+  }
+}
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: var(--nav-h);
   display: flex;
-  position: relative;
-  bottom: 0;
   align-items: center;
-  justify-content: center;
-  border-top: 2px solid #266388;
+  gap: 1.5rem;
+  padding: 0.5rem clamp(1rem, 4vw, 3rem);
+  background: rgba(219, 221, 223, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--blue);
+
+  ul {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .primary-nav {
+    flex: 1;
+    margin-left: 1.5rem;
+  }
+
+  // Pill-style links: the current page is a filled pill, never an underline
+  li > a:not(.nav-cta),
+  .link-btn {
+    display: inline-block;
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s ease, color 0.2s ease;
+    &:hover {
+      background: rgba(38, 99, 136, 0.12);
+      color: var(--blue-deep);
+    }
+    &.active {
+      background: var(--blue);
+      color: #fff;
+    }
+  }
+
+  .nav-cta {
+    margin-left: 0.4rem;
+    background: transparent;
+    color: var(--blue);
+    border: 2px solid var(--blue);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.3rem 1.1rem;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+    &:hover {
+      background: var(--blue);
+      color: #fff;
+    }
+  }
 }
 
-@media only screen and (max-width: 768px) {
-  footer {
-    font-size: 12px;
+.site-footer {
+  background: #17222b;
+  color: rgba(255, 255, 255, 0.72);
+  border-top: 3px solid var(--blue);
+  padding: 3.5rem clamp(1rem, 4vw, 3rem) 1.5rem;
+
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 2.5rem;
   }
-  nav {
-    font-size: 12px;
+
+  .brand {
+    color: var(--cream);
+    &:hover {
+      color: #fff;
+    }
   }
-  .primary-nav {
-    margin-left: 6.5em;
+
+  .footer-about p {
+    margin: 1rem 0 0;
+    max-width: 24rem;
+    line-height: 1.6;
+    font-size: 0.95rem;
   }
-  .secondary-nav {
-    margin-right: 8.5em !important;
+
+  .footer-col h2 {
+    font-family: "Inter", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cream);
+    margin: 0 0 1rem;
+  }
+
+  .footer-col ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .footer-col a,
+  .footer-col .link-btn {
+    color: rgba(255, 255, 255, 0.72);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  .footer-legal {
+    max-width: 1100px;
+    margin: 2.5rem auto 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+@media (max-width: 640px) {
+  .site-nav {
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding-block: 0.6rem;
+
+    .brand {
+      flex: 1 0 100%;
+      font-size: 1.1rem;
+    }
+    .primary-nav {
+      flex: 1;
+      margin-left: 0;
+    }
+    li > a:not(.nav-cta),
+    .link-btn {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.88rem;
+    }
+  }
+  .site-footer {
+    padding-top: 2.5rem;
+    .footer-inner {
+      grid-template-columns: 1fr 1fr;
+    }
+    .footer-about {
+      grid-column: 1 / -1;
+    }
   }
 }

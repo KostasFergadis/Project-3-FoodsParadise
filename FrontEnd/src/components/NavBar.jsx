@@ -1,62 +1,58 @@
-import { Link } from "react-router-dom";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { Link, NavLink } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+
+export const BrandMark = () => (
+  <svg className="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+    <circle cx="16" cy="16" r="16" />
+    <path d="M9 15h14a7 7 0 0 1-14 0z" />
+    <path d="M12 11.5c0-1.4 1.2-1.6 1.2-3M16 11.5c0-1.4 1.2-1.6 1.2-3M20 11.5c0-1.4 1.2-1.6 1.2-3" />
+  </svg>
+);
+
+const navigationLinks = [
+  { title: "Home", slug: "/" },
+  { title: "Explore", slug: "/explore" },
+];
+
 const NavBar = () => {
-  const navigationLinks = [
-    { title: "Home", slug: "/" },
-    { title: "Explore", slug: "/explore" },
-  ];
-
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setLoggedIn(localStorage.getItem("token") ? true : false);
-    axios.defaults.headers.common["Authorization"] = localStorage.getItem(
-      "token"
-    )
-      ? `Bearer ${localStorage.getItem("token")}`
-      : "";
-  }, [location]);
-
-  const onLogout = () => {
-    axios.defaults.headers.common["Authorization"] = "";
-    localStorage.removeItem("token");
-    setLoggedIn(false);
-    navigate("/");
-  };
+  const { loggedIn, logout } = useAuth();
 
   return (
-    <nav>
-      {
-        <ul className="primary-nav">
-          {navigationLinks.map((link, idx) => (
-            <li className="navbar" key={idx}>
-              <Link to={link.slug}>{link.title}</Link>
-            </li>
-          ))}
-        </ul>
-      }
+    <nav className="site-nav" aria-label="Main">
+      <Link to="/" className="brand">
+        <BrandMark />
+        <span>Foods Paradise</span>
+      </Link>
+      <ul className="primary-nav">
+        {navigationLinks.map((link) => (
+          <li key={link.slug}>
+            <NavLink to={link.slug} end>
+              {link.title}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
       <ul className="secondary-nav">
         {loggedIn ? (
           <>
             <li>
-              <Link to="/my-list">My List</Link>
+              <NavLink to="/my-list">My List</NavLink>
             </li>
-            <li className="nav-item" onClick={onLogout}>
-              <Link to="/logout">Logout</Link>
+            <li>
+              <button type="button" className="link-btn" onClick={logout}>
+                Logout
+              </button>
             </li>
           </>
         ) : (
           <>
-            <li className="nav-item">
-              <Link to="/register">Register</Link>
+            <li>
+              <NavLink to="/login">Login</NavLink>
             </li>
-            <li className="nav-item">
-              <Link to="/login">Login</Link>
+            <li>
+              <Link to="/register" className="nav-cta">
+                Register
+              </Link>
             </li>
           </>
         )}

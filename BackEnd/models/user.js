@@ -12,4 +12,10 @@ const userSchema = mongoose.Schema({
   },
 });
 
+// One account per email, regardless of letter case
+userSchema.index(
+  { email: 1 },
+  { unique: true, collation: { locale: "en", strength: 2 } }
+);
+
 export default mongoose.model("User", userSchema);

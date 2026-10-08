@@ -13,9 +13,9 @@ const getById = async (req, res, next) => {
   try {
     const getIndividual = await Food.findById(id);
     if (!getIndividual) {
-      res.status(404).json({
+      return res.status(404).json({
         succes: false,
-        msg: `the food with the id ${getIndividual} can't find`,
+        msg: `the food with the id ${id} can't be found`,
       });
     }
     return res.status(200).json({
@@ -30,7 +30,7 @@ const getById = async (req, res, next) => {
 const create = async (req, res, next) => {
   const newFood = req.body;
   if (req.currentUser.role !== 'admin') {
-     return res.status(400).json({ message: 'Not authenticated' });
+     return res.status(403).json({ message: 'Not authorized' });
   }
   try {
     const createdFood = await Food.create(newFood);
@@ -47,12 +47,13 @@ const updateById = async (req, res, next) => {
   const id = req.params['id'];
 
   try {
+    if (req.currentUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
     const updatedFood = await Food.findByIdAndUpdate(id, req.body, {
       returnDocument: 'after',
+      runValidators: true,
     });
-    if (req.currentUser.role !== 'admin') {
-      return res.status(400).json({ message: 'Not authenticated' });
-    }
 
     if (!updatedFood) {
       return res
@@ -74,7 +75,7 @@ const deleteById = async (req, res, next) => {
 
   try {
     if (req.currentUser.role !== 'admin') {
-      return res.status(400).json({ message: 'Not authenticated' });
+      return res.status(403).json({ message: 'Not authorized' });
     }
     const deletedFood = await Food.findByIdAndDelete(id);
     if (!deletedFood) {

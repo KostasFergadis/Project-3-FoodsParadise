@@ -3,9 +3,16 @@ import bcrypt from "bcrypt";
 import { JWT_SECRET } from "../consts.js";
 import jwt from "jsonwebtoken";
 
+// Case-insensitive match so "A@x.com" and "a@x.com" are the same account
+const findByEmail = (email) =>
+  User.findOne({ email }).collation({ locale: "en", strength: 2 });
+
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find();
+    if (req.currentUser.role !== "admin") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+    const users = await User.find().select("-password");
     res.status(200).json({ success: true, data: users });
   } catch (err) {
     next(err);
@@ -18,7 +25,7 @@ const getCurrentUser = async (req, res, next) => {
     const userId = req.currentUser.id;
 
     // Fetch the user information from the database
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       return res
@@ -34,25 +41,20 @@ const getCurrentUser = async (req, res, next) => {
 };
 
 const register = async (req, res, next) => {
-  const newUser = req.body;
+  // Only accept known fields: never trust a client-supplied role
+  const { email, userName, password, confirmPassword } = req.body;
   try {
-    const userExist = await User.findOne({ email: newUser.email });
+    const userExist = await findByEmail(email);
     if (userExist) {
-      return res
-        .status(400)
-        .json({ message: "User already exists", data: { userExist } });
+      return res.status(400).json({ message: "User already exists" });
     }
-    if (newUser.password !== newUser.confirmPassword) {
+    if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
-    //const createdUser = await User.create(newUser)
-    //const payload = { id }
     const salt = await bcrypt.genSalt(10);
-    newUser.password = await bcrypt.hash(newUser.password, salt);
-    await User.create(newUser);
-    return res.status(200).json({
-      message: `User succesfully registered with ${newUser.password}`,
-    });
+    const hashed = await bcrypt.hash(password, salt);
+    await User.create({ email, userName, password: hashed });
+    return res.status(200).json({ message: "User successfully registered" });
   } catch (err) {
     next(err);
   }
@@ -61,12 +63,11 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
-    const userAlreadyExist = await User.findOne({ email });
-    console.log(userAlreadyExist);
+    const userAlreadyExist = await findByEmail(email);
     if (!userAlreadyExist) {
       return res
         .status(400)
-        .json({ message: "User not found", data: userAlreadyExist });
+        .json({ message: "User not found" });
     }
     const comparePasswords = await bcrypt.compare(
       password,
@@ -78,7 +79,7 @@ const login = async (req, res, next) => {
     const payload = {
       id: userAlreadyExist.id,
     };
-    const token = jwt.sign(payload, JWT_SECRET);
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
     return res.status(200).json({
       message: `You have succesfully logged in! `,
       token,
